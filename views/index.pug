@@ -1,0 +1,19 @@
+extends layout
+
+block content
+  h1= title
+  p Welcome to #{title}
+  
+  button(class="btn btn-primary", onclick="faster()") Click Me!
+
+  div#faster Faster 1 times 2
+
+  script.
+    let value = 1;
+    let amt = 2;
+
+    function faster() {
+      amt *= 2;
+      value += amt;
+      document.getElementById("faster").innerText = `Faster ${value} times ${amt}`;
+    }
