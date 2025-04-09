@@ -1,0 +1,37 @@
+extends layout
+
+block content
+  h1= title
+
+  // Display query parameters
+  p Query Rows: #{query.rows}, Query Columns: #{query.cols}
+
+  // Convert query parameters to numbers
+  - var rows = Number(query.rows)
+  - var cols = Number(query.cols)
+
+  // Validate the input: check if rows and cols are integers
+  if (!Number.isInteger(rows) || !Number.isInteger(cols))
+    p Error: Rows and columns must be integers.
+
+  else
+    // Check if rows are within the valid range
+    if (rows < 3 || rows > 13)
+      p Error: Rows must be between 3 and 13.
+
+    else
+      // Check if cols are within the valid range
+      if (cols < 3 || cols > 13)
+        p Error: Columns must be between 3 and 13.
+
+      else
+        // If validation passes, generate the grid
+        table#outer(border="1")
+          // Loop through rows
+          - for (let i = 0; i < rows; i++) {
+            tr#middle
+              // Loop through columns
+              - for (let j = 0; j < cols; j++) {
+                td= i - j
+              - }
+          - }
