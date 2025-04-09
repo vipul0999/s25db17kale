@@ -1,47 +1,77 @@
-// ------------------- Module Imports -------------------
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-require('dotenv').config(); // Load environment variables
+// app.js
+require('dotenv').config();
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
 const mongoose = require('mongoose');
 
-// ------------------- App Initialization -------------------
-var app = express();
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
+const gridRouter = require('./routes/grid');
+const pickRouter = require('./routes/pick');
+const gadgetsRouter = require('./routes/gadgets');
+const resourceRouter = require('./routes/resource');
 
-// ------------------- View Engine Setup -------------------
+const Gadget = require('./models/gadget');
+
+const app = express();
+
+// MongoDB connection
+const connectionString = process.env.MONGO_CON;
+mongoose.connect(connectionString, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+const db = mongoose.connection;
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+db.once('open', () => {
+  console.log('✅ Connection to DB succeeded');
+});
+
+// Optional: Seed DB
+async function recreateDB() {
+  await Gadget.deleteMany();
+
+  const g1 = new Gadget({ gadget_name: 'Smartphone', brand: 'Samsung', price: 799 });
+  const g2 = new Gadget({ gadget_name: 'Laptop', brand: 'Dell', price: 999 });
+  const g3 = new Gadget({ gadget_name: 'Smartwatch', brand: 'Apple', price: 399 });
+
+  await g1.save();
+  await g2.save();
+  await g3.save();
+  console.log('📦 Sample gadgets saved');
+}
+
+let reseed = true;
+if (reseed) recreateDB();
+
+// view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
-// ------------------- Middleware Setup -------------------
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ------------------- Route Modules -------------------
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var gridRouter = require('./routes/grid');
-var pickRouter = require('./routes/pick');
-var gadgetsRouter = require('./routes/gadgets');
-
-// ------------------- Routes Setup -------------------
+// Define the routes
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/grid', gridRouter);
 app.use('/', pickRouter);
 app.use('/gadgets', gadgetsRouter);
+app.use('/resource', resourceRouter);
 
-// ------------------- 404 and Error Handling -------------------
-// Catch 404
+// catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
 });
 
-// General Error Handler
+// error handler
 app.use(function(err, req, res, next) {
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
@@ -49,15 +79,5 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-// ------------------- MongoDB Connection Setup -------------------
-const connectionString = process.env.MONGO_CON;
-
-mongoose.connect(connectionString); // ✅ Removed deprecated options
-
-const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'MongoDB connection error:'));
-db.once("open", function() {
-  console.log("✅ Connection to DB succeeded");
-});
-
 module.exports = app;
+
