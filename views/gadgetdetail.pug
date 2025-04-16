@@ -1,0 +1,40 @@
+extends layout
+
+block content
+  .container.mt-5
+    if toShow
+      .row.justify-content-center
+        .col-lg-10
+          .card.shadow-lg.p-5.border-0(style="background: linear-gradient(to right, #c9d6ff, #e2e2e2); border-radius: 20px;")
+            h1.text-center.text-primary.mb-4
+              i.fas.fa-eye.mr-2
+              | Gadget Details
+
+            .row.mb-3
+              .col-md-4.text-right.font-weight-bold.text-dark ID:
+              .col-md-8.text-left #{toShow._id}
+
+            .row.mb-3
+              .col-md-4.text-right.font-weight-bold.text-dark Name:
+              .col-md-8.text-left #{toShow.gadget_name}
+
+            .row.mb-3
+              .col-md-4.text-right.font-weight-bold.text-dark Brand:
+              .col-md-8.text-left #{toShow.brand}
+
+            .row.mb-3
+              .col-md-4.text-right.font-weight-bold.text-dark Price:
+              .col-md-8.text-left $#{toShow.price}
+
+            .mt-5.text-center
+              a.btn.btn-lg.btn-outline-secondary.rounded-pill.px-5(href='/gadgets')
+                i.fas.fa-arrow-left.mr-2
+                | Back to List
+    else
+      .alert.alert-danger.mt-5.text-center.p-4.rounded.shadow
+        h2.text-danger.mb-3
+          i.fas.fa-exclamation-triangle
+          | Gadget not found
+        a.btn.btn-lg.btn-primary.mt-3(href='/gadgets')
+          i.fas.fa-home
+          | Return to Gadget List

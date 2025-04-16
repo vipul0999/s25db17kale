@@ -1,0 +1,34 @@
+extends layout
+
+block content
+  h1= title
+
+  form(id='GadgetForm', action="/resource/gadgets", method="POST")
+    div.form-group
+      label(for='gadget_name') Gadget Name
+      input#gadget_name.form-control(type='text', name='gadget_name', required)
+
+    div.form-group
+      label(for='brand') Brand
+      input#brand.form-control(type='text', name='brand', required)
+
+    div.form-group
+      label(for='price') Price
+      input#price.form-control(type='number', name='price', step='0.01', required)
+
+    button.btn.btn-primary(type='submit') Create Gadget
+
+  script.
+    document.forms['GadgetForm'].addEventListener('submit', (event) => {
+      event.preventDefault();
+      fetch(event.target.action, {
+        method: 'POST',
+        body: new URLSearchParams(new FormData(event.target))
+      }).then(resp => resp.json())
+        .then(body => {
+          alert("Save succeeded");
+          window.location.href = '/gadgets';
+        }).catch(error => {
+          alert("Save failed: " + error);
+        });
+    });

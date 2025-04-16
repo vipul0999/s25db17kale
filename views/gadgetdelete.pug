@@ -1,0 +1,58 @@
+extends layout
+
+block content
+  h1= title
+
+  if (toShow)
+    - let gadgetid = toShow._id
+    - let actionid = "/resource/gadgets/" + gadgetid
+
+    div.row
+      div.gadgetAttr.mr-3 Gadget ID:
+      div #{toShow._id}
+
+    div.row
+      div.gadgetAttr.mr-3 Name:
+      div #{toShow.gadget_name}
+
+    div.row
+      div.gadgetAttr.mr-3 Brand:
+      div #{toShow.brand}
+
+    div.row
+      div.gadgetAttr.mr-3 Price:
+      div $#{toShow.price}
+
+    button.btn.btn-danger.m-2(onclick="deleteGadget()") Delete
+    button.btn.btn-secondary.m-2(onclick="cancelDelete()") Cancel
+
+    script.
+      function cancelDelete() {
+        window.location.href = '/gadgets';
+      }
+
+    script.
+      function deleteGadget() {
+        fetch("#{actionid}", {
+          method: 'DELETE'
+        }).then(resp => resp.json())
+          .then(body => {
+            alert("Delete succeeded");
+            window.location.href = '/gadgets';
+          }).catch(err => {
+            alert("Delete failed: " + err);
+          });
+      }
+
+  else
+    h2 No gadget found to delete
+
+  style.
+    .gadgetAttr {
+      background-color: #ffe0e0;
+      padding: 5px;
+      font-weight: bold;
+      width: 150px;
+      display: inline-block;
+      margin-bottom: 10px;
+    }
