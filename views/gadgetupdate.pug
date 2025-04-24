@@ -1,64 +1,56 @@
 extends layout
 
 block content
-  .container.mt-5
+  .container.mt-4
     if toShow
-      .row.justify-content-center
-        .col-lg-10
-          .card.border-0.shadow-lg.bg-gradient.p-5(style="background: linear-gradient(to right, #eef2f3, #8e9eab); border-radius: 20px;")
-            h1.text-center.text-dark.font-weight-bold.mb-4
-              i.fas.fa-tools.mr-2
-              | Update Your Gadget
+      .card.shadow.p-4.bg-light
+        h2.text-primary.mb-4= title
 
-            - let actionid = "/resource/gadgets/" + toShow._id
+        - let actionid = "/resource/gadgets/" + toShow._id
 
-            form#GadgetForm(action=actionid, method="POST")
-              .form-group
-                label.display-6.text-dark(for='gadget_name') 
-                  i.fas.fa-microchip.mr-2.text-primary
-                  | Gadget Name
-                input#gadget_name.form-control.form-control-lg.border-dark.rounded-pill(type='text', name='gadget_name', value=toShow.gadget_name, required)
+        form(id="GadgetForm", action=actionid, method="POST")
+          .form-group
+            label(for='gadget_name') Gadget Name
+            input#gadget_name.form-control(type='text', name='gadget_name', value=toShow.gadget_name, required)
 
-              .form-group.mt-4
-                label.display-6.text-dark(for='brand')
-                  i.fas.fa-industry.mr-2.text-info
-                  | Brand
-                input#brand.form-control.form-control-lg.border-dark.rounded-pill(type='text', name='brand', value=toShow.brand, required)
+          .form-group
+            label(for='brand') Brand
+            input#brand.form-control(type='text', name='brand', value=toShow.brand, required)
 
-              .form-group.mt-4
-                label.display-6.text-dark(for='price')
-                  i.fas.fa-tag.mr-2.text-success
-                  | Price ($)
-                input#price.form-control.form-control-lg.border-dark.rounded-pill(type='number', name='price', step='0.01', value=toShow.price, required)
+          .form-group
+            label(for='price') Price ($)
+            input#price.form-control(type='number', name='price', step='0.01', value=toShow.price, required)
 
-              .mt-5.d-flex.justify-content-between.align-items-center
-                button.btn.btn-lg.btn-outline-success.font-weight-bold.rounded-pill.px-5(type="submit")
-                  i.fas.fa-check.mr-2
-                  | Save Changes
+          #errorBox.text-danger.mt-2
 
-                a.btn.btn-lg.btn-outline-danger.font-weight-bold.rounded-pill.px-5(href='/gadgets')
-                  i.fas.fa-times.mr-2
-                  | Cancel
+          .mt-3
+            button.btn.btn-success(type="submit") 💾 Save Update
+            a.btn.btn-outline-secondary.ml-2(href='/gadgets') ← Cancel
 
-            script.
-              document.forms['GadgetForm'].addEventListener('submit', (event) => {
-                event.preventDefault();
-                fetch(event.target.action, {
-                  method: 'PUT',
-                  body: new URLSearchParams(new FormData(event.target))
-                }).then(resp => resp.json())
-                  .then(body => {
-                    alert("🎉 Update successful!");
-                    window.location.href = '/gadgets';
-                  }).catch(error => {
-                    alert("🚫 Update failed: " + error);
-                  });
-              });
+        script.
+          document.forms['GadgetForm'].addEventListener('submit', (event) => {
+            event.preventDefault();
+            const errorBox = document.getElementById('errorBox');
+            errorBox.textContent = ''; // Clear previous errors
+
+            fetch(event.target.action, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body: new URLSearchParams(new FormData(event.target))
+            }).then(resp => {
+              if (!resp.ok) {
+                return resp.json().then(data => { throw new Error(data.error || "Update failed") });
+              }
+              return resp.json();
+            }).then(body => {
+              alert("Update succeeded");
+              window.location.href = '/gadgets';
+            }).catch(error => {
+              errorBox.textContent = error.message;
+              console.error("Update failed:", error.message);
+            });
+          });
     else
-      .alert.alert-warning.mt-5.text-center.p-4.rounded.shadow
-        h2.text-danger.mb-3
-          i.fas.fa-exclamation-circle
-          |  Gadget not found
-        a.btn.btn-lg.btn-primary.mt-3(href='/gadgets')
-          i.fas.fa-arrow-left
-          |  Back to Gadget List
+      .alert.alert-danger.mt-4
+        h3.text-danger No gadget found to update.
+        a.btn.btn-primary.mt-2(href='/gadgets') ← Go Back to List

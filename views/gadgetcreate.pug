@@ -18,17 +18,27 @@ block content
 
     button.btn.btn-primary(type='submit') Create Gadget
 
+    div.mt-3
+      #errorBox.text-danger.font-weight-bold
+
   script.
     document.forms['GadgetForm'].addEventListener('submit', (event) => {
       event.preventDefault();
+      const errorBox = document.getElementById('errorBox');
+      errorBox.textContent = ''; // Clear old errors
+
       fetch(event.target.action, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams(new FormData(event.target))
-      }).then(resp => resp.json())
-        .then(body => {
-          alert("Save succeeded");
-          window.location.href = '/gadgets';
-        }).catch(error => {
-          alert("Save failed: " + error);
-        });
+      }).then(resp => {
+        if (!resp.ok) return resp.json().then(data => { throw new Error(data.error || 'Save failed') });
+        return resp.json();
+      }).then(body => {
+        alert("Save succeeded");
+        window.location.href = '/gadgets';
+      }).catch(error => {
+        errorBox.textContent = error.message;
+        console.error("Save error:", error.message);
+      });
     });

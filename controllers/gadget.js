@@ -27,10 +27,13 @@ exports.gadget_view_one_Page = async function (req, res) {
   console.log("Single view for id " + req.query.id);
   try {
     const result = await Gadget.findById(req.query.id);
+    if (!result) {
+      return res.status(404).render('gadgetdetail', { title: 'Gadget Detail', toShow: null });
+    }
     res.render('gadgetdetail', { title: 'Gadget Detail', toShow: result });
   } catch (err) {
     res.status(500);
-    res.send(`{'error': '${err}'}`);
+    res.send(`{"error": "${err}"}`);
   }
 };
 
@@ -52,7 +55,6 @@ exports.gadget_detail = async function (req, res) {
 
 // Handle Gadget create on POST
 exports.gadget_create_post = async function (req, res) {
-  console.log(req.body);
   let document = new Gadget({
     gadget_name: req.body.gadget_name,
     brand: req.body.brand,
@@ -60,11 +62,15 @@ exports.gadget_create_post = async function (req, res) {
   });
 
   try {
-    let result = await document.save();
+    const result = await document.save();
     res.json(result);
   } catch (err) {
-    res.status(500);
-    res.send({ error: err });
+    if (err.name === 'ValidationError') {
+      console.error("Validation Error:", err.message);
+      res.status(400).send({ error: err.message });
+    } else {
+      res.status(500).send({ error: err });
+    }
   }
 };
 
@@ -90,24 +96,27 @@ exports.gadget_create_Page = function(req, res) {
     res.render('gadgetcreate', { title: 'Gadget Create' });
   } catch (err) {
     res.status(500);
-    res.send(`{'error': '${err}'}`);
+    res.send(`{"error": "${err}"}`);
   }
 };
 
 // Handle building the view for updating a gadget (GET with ?id)
-exports.gadget_update_Page = async function(req, res) {
+exports.gadget_update_Page = async function (req, res) {
   console.log("Update view for item " + req.query.id);
   try {
-    const result = await Gadget.findById(req.query.id);
-    if (!result) {
-      res.status(404);
-      res.send(`{'error': 'Gadget with id ${req.query.id} not found'}`);
-    } else {
-      res.render('gadgetupdate', { title: 'Gadget Update', toShow: result });
+    const gadget = await Gadget.findById(req.query.id);
+    if (!gadget) {
+      return res.status(404).render('error', {
+        message: 'Gadget not found',
+        error: {}
+      });
     }
+    res.render('gadgetupdate', { title: 'Gadget Update', toShow: gadget });
   } catch (err) {
-    res.status(500);
-    res.send(`{'error': '${err}'}`);
+    res.status(500).render('error', {
+      message: 'Server error',
+      error: err
+    });
   }
 };
 
@@ -127,24 +136,29 @@ exports.gadget_update_put = async function (req, res) {
     console.log("Success: " + result);
     res.json(result);
   } catch (err) {
-    res.status(500);
-    res.send({ error: `${err}: Update for id ${req.params.id} failed` });
+    if (err.name === 'ValidationError') {
+      console.error("Validation Error:", err.message);
+      res.status(400).send({ error: err.message });
+    } else {
+      res.status(500);
+      res.send({ error: `${err}: Update for id ${req.params.id} failed` });
+    }
   }
 };
 
-// Handle a delete one view with id from query
+// Handle a deletae one view with id from query
 exports.gadget_delete_Page = async function(req, res) {
   console.log("Delete view for id " + req.query.id);
   try {
     const result = await Gadget.findById(req.query.id);
     if (!result) {
       res.status(404);
-      res.send(`{'error': 'Gadget with id ${req.query.id} not found'}`);
+      res.render('gadgetdelete', { title: 'Gadget Delete', toShow: null });
     } else {
       res.render('gadgetdelete', { title: 'Gadget Delete', toShow: result });
     }
   } catch (err) {
     res.status(500);
-    res.send(`{'error': '${err}'}`);
+    res.render('error', { message: 'Error loading delete view', error: err });
   }
 };

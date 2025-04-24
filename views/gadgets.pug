@@ -1,19 +1,25 @@
 extends layout
 
 block content
-  h1.text-center.mb-4= title
+  .container.mt-4
+    h1.text-center.mb-4.text-primary= title
 
-  .container
+    // Add New Gadget button
+    .text-end.mb-3
+      a.btn.btn-success(href='/gadgets/create') ➕ Add New Gadget
+
+    // Display each gadget in a card
     .row
       each item in results
         .col-md-4.mb-4
-          .card.shadow.p-3
-            h4.text-dark= item.gadget_name
-            p.text-muted Brand: #{item.brand}
-            p.text-muted Price: $#{item.price}
-            button.btn.btn-warning.mt-2(onclick=`dispatch('/gadgets/update?id=${item._id}')`) ✏️ Update
+          .card.shadow.p-3.h-100
+            .card-body
+              h4.card-title.text-dark= item.gadget_name
+              p.text-muted.mb-1 Brand: #{item.brand}
+              p.text-muted.mb-2 Price: $#{item.price}
 
-  script.
-    function dispatch(path) {
-      window.location.href = path;
-    }
+              // Action Buttons
+              .btn-group
+                a.btn.btn-info(href=`/gadgets/detail?id=${item._id}`) 🔍 View
+                a.btn.btn-warning(href=`/gadgets/update?id=${item._id}`) ✏️ Edit
+                a.btn.btn-danger(href=`/gadgets/delete?id=${item._id}`) ❌ Delete
